@@ -5,6 +5,8 @@ program TLS;
 {$Mode ObjFpc}
 
 uses
+	MPI,
+	
 	loader_adf,
 	p3_globals;
 

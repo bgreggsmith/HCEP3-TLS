@@ -1,0 +1,24 @@
+#Analysis Definition File (ADF)
+#This file should really be more config-like but at the moment things are executed and loaded in the order they appear in this file
+#It is therefore imperative the mesh is loaded prior to performing any operations with boundary conditions and field values
+
+#define source file for mesh
+meshfile mesh.su2
+
+#set up boundary conditions based on cell tags
+bctag inlet constant p 1.5E5
+bctag outlet constant p 1.2E5
+bctag wall constant ux 0
+bctag wall constant uy 0
+
+bgfield ux 0
+bgfield uy 0
+bgfield p 1.2E5
+
+#set up time control
+time_start 0
+time_end 10
+time_step 1E-5
+
+#set up field output interval
+logn 100

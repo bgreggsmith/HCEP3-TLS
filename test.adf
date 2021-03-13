@@ -5,20 +5,23 @@
 #define source file for mesh
 meshfile mesh.su2
 
-#set up boundary conditions based on cell tags
-bctag inlet constant p 1.5E5
-bctag outlet constant p 1.2E5
-bctag wall constant ux 0
-bctag wall constant uy 0
-
+#set background values before BCs to ensure these arent overwritten
 bgfield ux 0
 bgfield uy 0
 bgfield p 1.2E5
 
+#set up boundary conditions based on cell tags
+bctag inlet constant p 1.5E5
+bctag outlet constant p 1.0E5
+bctag wall constant ux 0
+bctag wall constant uy 0
+
+meshinit
+
 #set up time control
 time_start 0
 time_end 10
-time_step 1E-5
+time_step 0.1
 
 #set up field output interval
-logn 100
+logn 1

@@ -55,6 +55,8 @@ begin
 	Tgt^.BCdata[Tgt^.BCs].BCValue := BCValue;
 	Tgt^.BCdata[Tgt^.BCs].FieldID := FLDID;
 	
+	writeln('BC Created id=',Tgt^.BCs);
+	
 	Tgt^.BCs += 1;
 end;
 
@@ -84,6 +86,11 @@ var
 						
 						writeln('Generating mesh connectivity...');
 						GenerateConnectivity(Tgt);
+					end;
+				'meshinit':
+					begin
+						writeln('Updating mesh metadata...');
+						UpdateMetadata(Tgt);
 					end;
 				'logn' : Tgt^.LogInterval := StrToInt(Noun);
 				'bctag': 

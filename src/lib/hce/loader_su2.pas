@@ -16,6 +16,7 @@ uses
 
 procedure LoadSU2IntoDomain(Src: ANSIString; Dest: pp3Domain);
 procedure GenerateConnectivity(Dom: pp3Domain);
+procedure UpdateMetadata(Dom: pp3Domain);
 
 implementation
 
@@ -24,6 +25,63 @@ const
 	ParserMode_Elem		=	1;
 	ParserMode_Point	=	2;
 	ParserMode_Tag		=	3;
+
+procedure UpdateMetadata(Dom: pp3Domain);
+var
+	n, i, j, z: LongWord;
+	SumA, SumB: Double;
+
+begin
+	for n := 0 to Dom^.cells - 1 do
+		begin
+			//Compute cell centre
+			SumA := 0;
+			SumB := 0;
+			
+			for i := 0 to Length(Dom^.elemVtx[n])-1 do
+				begin
+					SumA += Dom^.vertex[Dom^.elemVtx[n][i]].x;
+					SumB += Dom^.vertex[Dom^.elemVtx[n][i]].y;
+				end;
+			
+			SumA := SumA / (i + 1);
+			SumB := SumB / (i + 1);
+			
+			Dom^.cell[n].centre.x := SumA;
+			Dom^.cell[n].centre.y := SumB;
+			
+			//Compute cell area using shoelace formula
+			SumA := 0;
+			SumB := 0;
+			for i := 0 to Length(Dom^.elemVtx[n])-2 do
+				begin
+					SumA += Dom^.vertex[Dom^.elemVtx[n][i]].x * Dom^.vertex[Dom^.elemVtx[n][i+1]].y;
+					SumB -= Dom^.vertex[Dom^.elemVtx[n][i]].y * Dom^.vertex[Dom^.elemVtx[n][i+1]].x;
+				end;
+			
+			Dom^.cell[n].area := abs(SumA + SumB) / 2;
+			
+			//Update tag count for the cell
+			z := 0;
+			for i := 0 to Dom^.tags - 1 do
+				for j := 0 to Dom^.tagElems[i] do
+					if Dom^.tagCells[i][j] = n then
+						z += 1;
+			
+			Dom^.cell[n].tags := z;
+			
+			//Set boundary condition field values
+			for i := 0 to Dom^.BCs - 1 do
+				begin
+					z := Dom^.BCdata[i].BCTag;
+					for j := 0 to Dom^.tagElems[z] - 1 do
+						begin
+							Dom^.cell[Dom^.tagCells[z][j]].fieldValue[Dom^.BCdata[i].fieldID] := Dom^.BCdata[i].BCValue;
+							writeln('BCSet cell ',Dom^.tagCells[z][j],' fieldID=',Dom^.BCdata[i].fieldID,' value=',Dom^.BCdata[i].BCValue);
+						end;
+				end;
+		end;
+end;
 
 procedure GenerateConnectivity(Dom: pp3Domain);
 var

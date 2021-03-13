@@ -5,16 +5,18 @@ unit p3_cell;
 interface
 
 uses
+	p3_vertex,
 	p3_buildConfig;
 
 type
 	p3Cell = Record
 			id_up, id_left, id_down, id_right: LongInt;
 			fieldValue: array [0..p3_nFields - 1] of Double;
-			vertexIDs: array of LongWord;
 			area: Double;
-			tags: Integer;
+			tags: LongInt;
+			centre: vtx2;
 		end;
+	pp3Cell = ^p3Cell;
 
 implementation
 

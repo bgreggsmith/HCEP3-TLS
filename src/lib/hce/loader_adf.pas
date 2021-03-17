@@ -93,6 +93,11 @@ var
 						UpdateMetadata(Tgt);
 					end;
 				'logn' : Tgt^.LogInterval := StrToInt(Noun);
+				'const':
+					begin
+						Noun2 := GetCharSVParameterFromString(3, LineIn, ' '); //Const value
+						SetConst(Tgt, Noun, StrToFloat(Noun2));
+					end;
 				'bctag': 
 					begin
 						//Noun contains Mesh patch tag name

@@ -12,6 +12,7 @@ procedure SetFieldUniform(tgt: pp3Domain; fieldName: ANSIString; value: Double);
 procedure DumpFieldToFileCSV(Dom: pp3Domain; FieldName: ANSIString; DestFile: ANSIString);
 procedure DumpFieldsToFileVTK(Dom: pp3Domain; FieldName: ANSIString; DestFile: ANSIString);
 function FieldMax(Dom: pp3Domain; FieldName: ANSIString): Double;
+procedure SetBCCells(Dom: pp3Domain);
 
 implementation
 
@@ -19,6 +20,22 @@ uses
 	sysutils,
 	
 	p3_buildConfig;
+
+procedure SetBCCells(Dom: pp3Domain);
+var
+	i, j, z: LongWord;
+
+begin
+	for i := 0 to Dom^.BCs - 1 do
+		begin
+			z := Dom^.BCdata[i].BCTag;
+			for j := 0 to Dom^.tagElems[z] - 1 do
+				begin
+					Dom^.cell[Dom^.tagCells[z][j]].fieldValue[Dom^.BCdata[i].fieldID] := Dom^.BCdata[i].BCValue;
+					//writeln('BCSet cell ',Dom^.tagCells[z][j],' fieldID=',Dom^.BCdata[i].fieldID,' value=',Dom^.BCdata[i].BCValue);
+				end;
+		end;
+end;
 
 function FieldMax(Dom: pp3Domain; FieldName: ANSIString): Double;
 var

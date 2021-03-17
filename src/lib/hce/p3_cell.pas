@@ -18,7 +18,27 @@ type
 		end;
 	pp3Cell = ^p3Cell;
 
+procedure CopyCell(Src, Dest: pp3Cell);
+
 implementation
+
+procedure CopyCell(Src, Dest: pp3Cell);
+var
+	n: LongWord;
+
+begin
+	Dest^.id_up := Src^.id_up;
+	Dest^.id_down := Src^.id_down;
+	Dest^.id_left := Src^.id_left;
+	Dest^.id_right := Src^.id_right;
+	
+	for n := 0 to p3_nFields-1 do
+		Dest^.fieldValue[n] := Src^.fieldValue[n];
+	
+	Dest^.area := Src^.area;
+	Dest^.tags := Src^.tags;
+	Dest^.centre := Src^.centre;
+end;
 
 begin
 end.

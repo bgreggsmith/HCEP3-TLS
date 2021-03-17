@@ -20,6 +20,9 @@ procedure UpdateMetadata(Dom: pp3Domain);
 
 implementation
 
+uses
+	p3_fieldops;
+
 const
 	ParserMode_Generic	=	0;
 	ParserMode_Elem		=	1;
@@ -70,16 +73,7 @@ begin
 			
 			Dom^.cell[n].tags := z;
 			
-			//Set boundary condition field values
-			for i := 0 to Dom^.BCs - 1 do
-				begin
-					z := Dom^.BCdata[i].BCTag;
-					for j := 0 to Dom^.tagElems[z] - 1 do
-						begin
-							Dom^.cell[Dom^.tagCells[z][j]].fieldValue[Dom^.BCdata[i].fieldID] := Dom^.BCdata[i].BCValue;
-							writeln('BCSet cell ',Dom^.tagCells[z][j],' fieldID=',Dom^.BCdata[i].fieldID,' value=',Dom^.BCdata[i].BCValue);
-						end;
-				end;
+			SetBCCells(Dom);
 		end;
 end;
 

@@ -12,7 +12,7 @@ uses
 	p3_simExec;
 
 var
-	n: Longword;
+	//n: Longword;
 	numprocs, rank: Integer;
 
 begin

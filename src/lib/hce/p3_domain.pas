@@ -29,13 +29,63 @@ type
 			
 			TNow, TStart, TStep, TEnd: Double;
 			logInterval: Int64;
+			
+			consts: Int64;
+			ConstID: array of ANSIString;
+			ConstValue: array of Double;
 		end;
 	pp3Domain = ^p3Domain;
 
 function MeshTagIDFromName(Tgt: pp3Domain; TagName: ANSIString): LongInt;
 procedure CopyDomain(Src, Dest: pp3Domain);
+function GetConst(Dom: pp3Domain; ID: ANSIString): Double;
+procedure SetConst(Dom: pp3Domain; ID: ANSIString; Value: Double);
 
 implementation
+
+function GetConst(Dom: pp3Domain; ID: ANSIString): Double;
+var
+	n: LongWord;
+
+begin
+	GetConst := 0;
+	
+	if Dom^.consts > 0 then
+		for n := 0 to Dom^.consts - 1 do
+			if ID = Dom^.ConstID[n] then
+				begin
+					GetConst := Dom^.ConstValue[n];
+					Exit;
+				end;
+	
+	writeln('ERROR: p3_Domain:GetConst() invalid undefined constant [',ID,']');
+end;
+
+procedure SetConst(Dom: pp3Domain; ID: ANSIString; Value: Double);
+var
+	n: LongWord;
+
+begin
+	if Dom^.consts >= Length(Dom^.ConstID) then
+		begin
+			SetLength(Dom^.ConstID, Dom^.consts + 8);
+			SetLength(Dom^.ConstValue, Dom^.consts + 8);
+		end;
+	
+	//Check if this is an update and not a new creation
+	if Dom^.consts > 0 then
+		for n := 0 to Dom^.consts - 1 do
+			if Dom^.ConstID[n] = ID then
+				begin
+					Dom^.ConstID[n] := ID;
+					Dom^.ConstValue[n] := Value;
+					Exit;
+				end;
+	
+	Dom^.ConstID[Dom^.consts] := ID;
+	Dom^.ConstValue[Dom^.consts] := Value;
+	Dom^.consts += 1;
+end;
 
 procedure CopyDomain(Src, Dest: pp3Domain);
 var
@@ -54,7 +104,7 @@ begin
 	Dest^.cells := Src^.cells;
 	SetLength(Dest^.cell, Length(Src^.cell));
 	for n := 0 to Length(Src^.cell) - 1 do
-		Dest^.cell[n] := Src^.cell[n];
+		CopyCell(@Src^.cell[n], @Dest^.cell[n]);
 	
 	Dest^.vertices := Src^.vertices;
 	SetLength(Dest^.vertex, Length(Src^.vertex));
@@ -86,6 +136,15 @@ begin
 	Dest^.TEnd := Src^.TEnd;
 	
 	Dest^.LogInterval := Src^.LogInterval;
+	
+	Dest^.consts := Src^.consts;
+	SetLength(Dest^.constID, Length(Src^.constID));
+	SetLength(Dest^.constValue, Length(Src^.constValue));
+	for n := 0 to Length(Src^.constID) do
+		begin
+			Dest^.constID[n] := Src^.constID[n];
+			Dest^.constValue[n] := Src^.constValue[n];
+		end;
 end;
 
 function MeshTagIDFromName(Tgt: pp3Domain; TagName: ANSIString): LongInt;

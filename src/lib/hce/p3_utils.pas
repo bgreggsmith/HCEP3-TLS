@@ -7,8 +7,21 @@ interface
 
 function GetCharSVParameterFromString(Id: Int64; CSV, Sep: ANSIString): ANSIString;
 function StripLeft(Match: Char; Dat: ANSIString): ANSIString;
+function RealToStrAccuracy(Data: Real; Digits: Int64): ANSIString;
 
 implementation
+
+uses
+	sysutils;
+
+function RealToStrAccuracy(Data: Real; Digits: Int64): ANSIString;
+var
+	Tmp: ANSIString;
+	
+begin
+	Str(Data:1:trunc(Digits * 0.75), Tmp);
+	RealToStrAccuracy := Tmp;
+end;
 
 function StripLeft(Match: Char; Dat: ANSIString): ANSIString;
 var

@@ -163,6 +163,8 @@ begin
 			Exit;
 		end;
 	
+	writeln('Set field [',fieldName,'] fieldID=',fNum,' to ',value,' uniform');
+	
 	for n := 0 to tgt^.cells - 1 do
 		tgt^.cell[n].fieldValue[fNum] := value;
 end;

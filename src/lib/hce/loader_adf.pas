@@ -17,6 +17,7 @@ uses
 	p3_utils,
 	p3_boundaryConditions,
 	p3_fieldops,
+	p3_matrixops,
 	
 	loader_su2;
 
@@ -60,6 +61,110 @@ begin
 	Tgt^.BCs += 1;
 end;
 
+procedure GenerateConnectivityMatrix(Dom: pp3Domain; Dst: pMatrix);
+var
+	n: LongWord;
+	id: array [0..3] of Int64;
+	dx, dy, dx1, dx2, dy1, dy2: Double;
+	nx, ny: Int64;
+
+	function Max(a, b: Double): Double;
+	begin
+		if a > b then
+			Max := a
+		else
+			Max := b;
+	end;
+
+begin
+	for n := 0 to Dom^.cells-1 do
+		begin
+			//Neighbour cell IDs
+			id[0] := Dom^.cell[n].id_up;
+			id[1] := Dom^.cell[n].id_down;
+			id[2] := Dom^.cell[n].id_left;
+			id[3] := Dom^.cell[n].id_right;
+		
+			//Distances to centre of neighbour cell (left/right/up/down)
+			dx := 0;
+			dy := 0;
+			nx := 0;
+			ny := 0;
+			
+			//Compute dx
+			if id[2] >= 0 then
+				begin
+					dx1 := abs(Dom^.cell[n].centre.x - Dom^.cell[id[2]].centre.x);
+					nx += 1;
+				end;
+			
+			if id[3] >= 0 then
+				begin
+					dx2 := abs(Dom^.cell[id[3]].centre.x - Dom^.cell[n].centre.x);
+					nx += 1;
+				end;
+			
+			if nx = 2 then
+				dx := 0.5 * (dx1 + dx2)
+			else
+				dx := max(dx1, dx2);
+			
+			//Compute dy
+			if id[0] >= 0 then
+				begin
+					dy1 := abs(Dom^.cell[n].centre.y - Dom^.cell[id[0]].centre.y);
+					nx += 1;
+				end;
+			
+			if id[1] >= 0 then
+				begin
+					dy2 := abs(Dom^.cell[id[1]].centre.y - Dom^.cell[n].centre.y);
+					ny += 1;
+				end;
+			
+			if ny = 2 then
+				dy := 0.5 * (dy1 + dy2)
+			else
+				dy := max(dy1, dy2);
+			
+			//Local cell connectivity along diagonal
+			Dst^[n][n] := (nx / dx) + (ny / dy);
+			
+			//Store inter-cell connectivity components
+			if id[2] >= 0 then
+				Dst^[n][id[2]] := -1/dx;
+			
+			if id[3] >= 0 then
+				Dst^[n][id[3]] := -1/dx;
+			
+			if id[0] >= 0 then
+				Dst^[n][id[0]] := -1/dy;
+			
+			if id[1] >= 0 then
+				Dst^[n][id[1]] := 1/dy;
+		end;
+	
+	for n := 0 to Dom^.cells-1 do
+		Dst^[0][n] := 0;
+	
+	//Set reference pressure cell
+	Dst^[0][0] := 1;
+end;
+
+procedure InitialiseMatrixConnectivity(Dom: pp3Domain);
+var
+	CMat: Matrix;
+
+begin
+	writeln('Initialising connectivity matrix data...');
+	SetLength(CMat, Dom^.cells, Dom^.cells);
+	writeln('Generating forward connectivity matrix...');
+	GenerateConnectivityMatrix(Dom, @CMat);
+	writeln('Inverting connectivity matrix...');
+	SetLength(Dom^.InvertedConnectivityMatrix, Dom^.cells, Dom^.cells);
+	InvertMatrix(@Cmat, @Dom^.InvertedConnectivityMatrix, Dom^.cells);
+end;
+
 procedure LoadADF(Src: ANSIString; Tgt: pp3Domain);
 var
 	Disk: Text;
@@ -91,6 +196,9 @@ var
 					begin
 						writeln('Updating mesh metadata...');
 						UpdateMetadata(Tgt);
+						
+						//Generate connectivity matrix and compute the inverse for solving the poission equation with L*P*L_inv=R*L_inv
+						InitialiseMatrixConnectivity(Tgt);
 					end;
 				'logn' : Tgt^.LogInterval := StrToInt(Noun);
 				'const':

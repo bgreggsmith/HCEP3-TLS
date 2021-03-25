@@ -113,7 +113,7 @@ begin
 					
 					if D[i][i] = 0 then
 						begin
-							writeln('Error: 0 divide on diagonal!')
+							writeln('Error: 0 divide on diagonal!');
 							Halt;
 						end
 					else

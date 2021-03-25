@@ -7,7 +7,8 @@ interface
 uses
 	p3_cell,
 	p3_boundaryConditions,
-	p3_vertex;
+	p3_vertex,
+	p3_matrixops;
 
 type
 	p3Domain = Record
@@ -33,6 +34,8 @@ type
 			consts: Int64;
 			ConstID: array of ANSIString;
 			ConstValue: array of Double;
+			
+			InvertedConnectivityMatrix: Matrix;
 		end;
 	pp3Domain = ^p3Domain;
 
@@ -145,6 +148,11 @@ begin
 			Dest^.constID[n] := Src^.constID[n];
 			Dest^.constValue[n] := Src^.constValue[n];
 		end;
+	
+	SetLength(Dest^.InvertedConnectivityMatrix, Src^.cells, Src^.cells);
+	for n := 0 to Src^.cells - 1 do
+		for i := 0 to Src^.cells - 1 do
+			Dest^.InvertedConnectivityMatrix[n][i] := Src^.InvertedConnectivityMatrix[n][i];
 end;
 
 function MeshTagIDFromName(Tgt: pp3Domain; TagName: ANSIString): LongInt;

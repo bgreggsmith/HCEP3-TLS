@@ -2,6 +2,8 @@
 
 mkdir -p build
 
+rm -rf out/*.vtk.*
+
 if [ "$3" == "noclean" ]; then
 	doclean=0;
 else

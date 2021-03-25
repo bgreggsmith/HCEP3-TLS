@@ -63,7 +63,7 @@ end;
 
 procedure GenerateConnectivityMatrix(Dom: pp3Domain; Dst: pMatrix);
 var
-	n: LongWord;
+	n, i: LongWord;
 	id: array [0..3] of Int64;
 	dx, dy, dx1, dx2, dy1, dy2: Double;
 	nx, ny: Int64;
@@ -77,6 +77,10 @@ var
 	end;
 
 begin
+	for n := 0 to Dom^.cells-1 do
+		for i := 0 to Dom^.cells-1 do
+			Dst^[n][i] := 0;
+	
 	for n := 0 to Dom^.cells-1 do
 		begin
 			//Neighbour cell IDs
@@ -128,24 +132,24 @@ begin
 				dy := max(dy1, dy2);
 			
 			//Local cell connectivity along diagonal
-			Dst^[n][n] := (nx / dx) + (ny / dy);
+			Dst^[n][n] := -(nx / (dx * dx)) - (ny / (dy * dy));
 			
 			//Store inter-cell connectivity components
 			if id[2] >= 0 then
-				Dst^[n][id[2]] := -1/dx;
+				Dst^[n][id[2]] := 1/(dx*dx);
 			
 			if id[3] >= 0 then
-				Dst^[n][id[3]] := -1/dx;
+				Dst^[n][id[3]] := 1/(dx*dx);
 			
 			if id[0] >= 0 then
-				Dst^[n][id[0]] := -1/dy;
+				Dst^[n][id[0]] := 1/(dy*dy);
 			
 			if id[1] >= 0 then
-				Dst^[n][id[1]] := 1/dy;
+				Dst^[n][id[1]] := 1/(dy*dy);
 		end;
 	
-	for n := 0 to Dom^.cells-1 do
-		Dst^[0][n] := 0;
+	//for n := 0 to Dom^.cells-1 do
+	//	Dst^[0][n] := 0;
 	
 	//Set reference pressure cell
 	Dst^[0][0] := 1;

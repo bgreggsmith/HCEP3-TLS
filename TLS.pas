@@ -6,9 +6,11 @@ program TLS;
 
 uses
 	MPI,
+	crt,
 	
 	loader_adf,
 	p3_globals,
+	p3_fieldops,
 	p3_simExec;
 
 var
@@ -23,7 +25,14 @@ begin
 	
 	writeln('TLS Rank=',rank,' of ',numprocs);
 	
-	LoadADF('test.adf', @simData);
+	LoadADF('lid.adf', @simData);
+	
+	writeln('Writing prestart field data...');
+	SetBCCells(@SimData);
+	DumpFieldsToFileVTK(@SimData, 'p', 'out/prestart.vtk');
+	
+	writeln('ADF Loaded, any key to start the mayhem.');
+	ReadKey();
 	
 	ExecSimulation_Proof(@simData);
 	

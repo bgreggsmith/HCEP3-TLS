@@ -92,8 +92,8 @@ begin
 	vField := GetFieldNFromName('uy');
 	
 	//Limit to sonic speeds, stagnation pressure
-	vLimit := 500;
-	pLimit := 0.5 * rho * vLimit * vLimit;
+	vLimit := 20;
+	pLimit := 50E5;
 	
 	for n := 0 to Data^.cells - 1 do
 		begin
@@ -119,7 +119,6 @@ var
 	Sum, u_here, v_here: Double;
 	us, vs, rh: array of Double;
 	delu, d2fdx2, d2fdy2, fdfdx, fdfdy, dx1, dx2, dy1, dy2, dx, dy, deltaT, nu, rho, dfdx, dfdy: Double;
-	flag_Edge: Boolean;
 	id_xm, id_xp, id_ym, id_yp: LongInt;
 
 	function Max(a, b: Double): Double;
@@ -147,14 +146,11 @@ var
 		if id[3] >= 0 then id_xp := id[3] else id_xp := n;
 		if id[2] >= 0 then id_xm := id[2] else id_xm := n;
 		
-		flag_Edge := False;
 		_su := 0;
 		_sv := 0;
 		_n := 0;
 		for _i := 0 to 3 do
-			if id[_i] < 0 then
-				flag_Edge := True
-			else
+			if id[_i] >= 0 then
 				begin
 					_su += RData^.cell[id[_i]].fieldValue[uField];
 					_sv += RData^.cell[id[_i]].fieldValue[vField];
@@ -273,15 +269,9 @@ begin
 			Sum := (nu * ( d2fdx2 + d2fdy2 )) - (fdfdx + fdfdy);
 			
 			vs[n] := RData^.cell[n].fieldValue[vField] + (deltaT * Sum);
-
+			
 //Solving the poisson equation
 EntryPoint_Laplace:
-		end;
-	
-	for n := 0 to RData^.cells - 1 do
-		begin
-			PopulateNeighDeltas();
-			
 			//Check for any edges and use copy results
 			//delu := ((us[id_xp] - us[n]) / dx) + ((vs[id_yp] - vs[n]) / dy);
 			delu := -(((RData^.cell[id_xp].fieldValue[uField] - RData^.cell[n].fieldValue[uField]) / dx) + 
@@ -299,8 +289,7 @@ EntryPoint_Laplace:
 			for i := 0 to RData^.cells - 1 do
 				WData^.cell[n].fieldValue[pField] += (RData^.InvertedConnectivityMatrix[n][i] * rh[i]);
 			
-			WData^.cell[n].fieldValue[pField] := relax * WData^.cell[n].fieldValue[pField];
-			WData^.cell[n].fieldValue[pField] += RData^.cell[n].fieldValue[pField];
+			WData^.cell[n].fieldValue[pField] := WData^.cell[n].fieldValue[pField];
 		end;
 	
 	for n := 0 to RData^.cells - 1 do
@@ -311,8 +300,10 @@ EntryPoint_Corrector:
 			dfdx := 0.1 * (WData^.cell[id_ym].fieldValue[pField] - WData^.cell[n].fieldValue[pField]) / dx;
 			dfdy := 0.1 * (WData^.cell[id_xm].fieldValue[pField] - WData^.cell[n].fieldValue[pField]) / dy;
 			
-			WData^.cell[n].fieldValue[uField] := us[n] + (deltaT / rho) * (dfdx * 0.1);
-			WData^.cell[n].fieldValue[vField] := vs[n] + (deltaT / rho) * (dfdy * 0.1);
+			WData^.cell[n].fieldValue[uField] := us[n] + (deltaT / rho) * dfdx;
+			WData^.cell[n].fieldValue[vField] := vs[n] + (deltaT / rho) * dfdy;
+			
+			//WData^.cell[n].fieldValue[pField] += RData^.cell[n].fieldValue[pField];
 			
 EntryPoint_FinaliseCell:
 		end;
@@ -345,14 +336,14 @@ begin
 	
 	DumpFieldsToFileVTK(WritePTR, 'p', 'out/result.vtk.' + IntToStr(0));
 	
-	iter := 0;
+	iter := 1;
 	repeat
 		writeln('Kernel exec for t=',ReadPtr^.TNow);
 		
 		KernelExec(ReadPtr, WritePtr);
 		SetBCCells(WritePTR);
 		ApplyLimiters(WritePTR);
-		//ApplySmoothing(WritePTR);
+		ApplySmoothing(WritePTR);
 		
 		if iter mod Dom^.logInterval = 0 then
 			DumpFieldsToFileVTK(WritePTR, 'p', 'out/result.vtk.' + IntToStr(iter));

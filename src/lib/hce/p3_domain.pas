@@ -143,7 +143,7 @@ begin
 	Dest^.consts := Src^.consts;
 	SetLength(Dest^.constID, Length(Src^.constID));
 	SetLength(Dest^.constValue, Length(Src^.constValue));
-	for n := 0 to Length(Src^.constID) do
+	for n := 0 to Dest^.consts-1 do
 		begin
 			Dest^.constID[n] := Src^.constID[n];
 			Dest^.constValue[n] := Src^.constValue[n];

@@ -79,8 +79,6 @@
 //+
 Physical Line("inlet") = {4};
 //+
-Physical Line("wall") = {10, 3, 7};
+Physical Line("wall") = {10, 3, 7, 1, 5, 9};
 //+
 Physical Line("outlet") = {6};
-//+
-Physical Line("free") = {1, 9, 5};

@@ -29,7 +29,7 @@ type
 			BCdata: array of p3BoundaryCondition;
 			
 			TNow, TStart, TStep, TEnd: Double;
-			logInterval: Int64;
+			logInterval, iter: Int64;
 			
 			consts: Int64;
 			ConstID: array of ANSIString;

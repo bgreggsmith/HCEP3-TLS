@@ -9,6 +9,7 @@ uses
 
 var
 	simData: p3Domain;
+	numprocs, rank: Integer;
 
 implementation
 

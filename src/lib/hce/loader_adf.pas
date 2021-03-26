@@ -117,7 +117,7 @@ begin
 			if id[0] >= 0 then
 				begin
 					dy1 := abs(Dom^.cell[n].centre.y - Dom^.cell[id[0]].centre.y);
-					nx += 1;
+					ny += 1;
 				end;
 			
 			if id[1] >= 0 then

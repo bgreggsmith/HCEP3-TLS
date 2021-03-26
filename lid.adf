@@ -1,0 +1,30 @@
+#Analysis Definition File (ADF)
+#This file should really be more config-like but at the moment things are executed and loaded in the order they appear in this file
+#It is therefore imperative the mesh is loaded prior to performing any operations with boundary conditions and field values
+
+#define source file for mesh
+meshfile lid.su2
+
+#set up boundary conditions based on cell tags
+bctag lid constant ux 2
+bctag wall constant ux 0
+bctag wall constant uy 0
+bctag lid constant p 1.1E5
+
+meshinit
+
+#set background values before BCs to ensure these arent overwritten
+bgfield ux 0
+bgfield uy 0
+bgfield p 1.1E5
+
+const nu 1.5E-5
+const rho 1.225
+
+#set up time control
+time_start 0
+time_end 100
+time_step 0.01
+
+#set up field output interval
+logn 10

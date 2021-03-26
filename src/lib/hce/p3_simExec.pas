@@ -8,15 +8,28 @@ uses
 	p3_domain;
 
 procedure ExecSimulation_Proof(Dom: pp3Domain);
+procedure ExecSimulation_CSE(Dom: pp3Domain);
 
 implementation
 
 uses
+	crt,
 	sysutils,
 	
 	p3_matrixops,
 	p3_fieldops,
-	p3_buildConfig;
+	p3_buildConfig,
+	p3_CSECommunication;
+
+procedure ExecSimulation_CSE(Dom: pp3Domain);
+begin
+	Dom^.TNow := Dom^.TStart;
+	
+	repeat
+		CSE_RXFieldWBack(Dom);
+		DumpFieldsToFileVTK(Dom, 'p', 'out/result.vtk.' + IntToStr(Dom^.Iter));
+		until Dom^.TNow > Dom^.TEnd;
+end;
 
 procedure ApplyCellBCs(Dom: pp3Domain; cellId: Int64);
 var
